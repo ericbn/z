@@ -177,12 +177,15 @@ _z() {
                 return short
             }
             BEGIN {
-                if( cas == "i" ) {
-                    q = tolower(q)
-                    imatch = 1
-                } else if( cas != "s" && q == tolower(q) ) imatch = 1
-                gsub(/ /, ".*", q)
-                hi_rank = -9999999999
+                if( length(q) ) {
+                    query = 1
+                    if( cas == "i" ) {
+                        q = tolower(q)
+                        imatch = 1
+                    } else if( cas != "s" && q == tolower(q) ) imatch = 1
+                    gsub(/ /, ".*", q)
+                    hi_rank = -9999999999
+                }
             }
             {
                 if( typ == "r" ) {
@@ -190,16 +193,18 @@ _z() {
                 } else if( typ == "t" ) {
                     rank = $3 - now
                 } else rank = frecent($2, $3)
-                if( imatch ) {
-                    x = tolower($1)
-                } else x = $1
-                if( x ~ q ) {
-                    matches[$1] = rank
-                    if( rank > hi_rank ) {
-                        best_match = $1
-                        hi_rank = rank
+                if( query ) {
+                    if( imatch ) {
+                        x = tolower($1)
+                    } else x = $1
+                    if( x ~ q ) {
+                        matches[$1] = rank
+                        if( rank > hi_rank ) {
+                            best_match = $1
+                            hi_rank = rank
+                        }
                     }
-                }
+                } else matches[$1] = rank
             }
             END {
                 output(matches, best_match, common(matches))
